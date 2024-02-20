@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Automated Garments Inspection</title>
+  <link rel="stylesheet" href="user.css">
+</head>
+<body>
+  <header>
+    <div class="logo">
+      <img src="logo.png" alt="Logo">
+    </div>
+  </header>
+  <div class="main-container">
+    <div class="left-panel">
+      <div class="report">
+        <h2>Defect Report</h2>
+        <p>Article Number: XXXX</p>
+        <p>Defect Name: XXXX</p>
+        <p>Number of Defects: XX</p>
+        <button id="printReport">Print Report</button>
+      </div>
+      <div class="defect-images">
+        <!-- Defect images will be displayed here -->
+        <!-- Use JavaScript to add images dynamically -->
+      </div>
+    </div>
+    <div class="right-panel">
+      <div class="camera-screen">
+        <video id="cameraFeed" controls autoplay></video>
+        <canvas id="canvas" style="display: none;"></canvas>
+        <div class="camera-buttons">
+          <button id="startCamera">Start Camera</button>
+          <button id="takeDefectPic">Take Defect Pic</button>
+          <button id="resumeCamera">Resume Camera</button>
+          <button id="stopCamera">Stop Camera</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script src="user.js"></script>
+</body>
+</html>

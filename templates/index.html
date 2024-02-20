@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Automated Garments Inspection</title>
+  <link rel="stylesheet" href="user.css">
+  <style>
+    body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: rgb(187, 212, 212);
+  }
+  
+  header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    background-color: #0a0d3b;
+    color: #fff;
+    padding: 1rem;
+    text-align: center;
+    z-index: 1;
+  }
+  
+  .logo {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+  }
+  
+  .logo img {
+    width: 60px; /* Adjust the size as needed */
+    height: 60px; /* Adjust the size as needed */
+    margin-right: 0.5rem;
+  }
+  
+  .logo button{
+    background-color: #a79bd2;
+    color: #3940c0;
+    padding: 0.5rem 1rem;
+    border: none;
+    cursor: pointer;
+    font-size: 16px;
+    border-radius: 4px;
+    margin-bottom: 0.5rem;
+    margin-left: 80%;
+  }
+
+  .main-container {
+    display: flex;
+    margin-top: 100px; /* To push content below the fixed header */
+  }
+  
+  .left-panel {
+    flex: 1;
+    background-color: #9bd3da;
+    padding: 1rem;
+  }
+  
+  .right-panel {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .camera-screen {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  video {
+    max-width: 100%;
+    margin-bottom: 1rem;
+  }
+  
+  .camera-buttons button {
+    background-color: #a79bd2;
+    color: #3940c0;
+    padding: 0.5rem 1rem;
+    border: none;
+    cursor: pointer;
+    font-size: 16px;
+    border-radius: 4px;
+    margin-bottom: 0.5rem;
+  }
+  
+  button:hover {
+    background-color: #f1f1f1;
+  }
+  
+  .report {
+    background-color: #fff;
+    padding: 1rem;
+    border-radius: 4px;
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
+    margin-bottom: 1rem;
+  }
+  
+  .defect-images {
+    background-color: #fff;
+    padding: 1rem;
+    border-radius: 4px;
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
+    overflow-y: auto;
+    max-height: 300px; /* Adjust as needed */
+  }
+  
+  .defect-images img {
+    display: block;
+    width: 100%;
+    margin-bottom: 0.5rem;
+  }
+  
+  .report h2 {
+    margin-bottom: 1rem;
+  }
+  
+  </style>
+  
+</head>
+<body>
+  <header>
+    <div class="logo">
+      <img src="logo.png" alt="Logo">
+      <button>Logout</button>
+    </div> 
+  </header>
+  <div class="main-container">
+    <div class="left-panel">
+      <div class="report">
+        <h2>Defect Report</h2>
+        <p>Defect Name: Hole,Stain</p>
+        <p>Number of Defects: 02</p>
+        <button id="printReport">Print Report</button>
+      </div>
+      <div class="defect-images">
+        <!-- Defect images will be displayed here -->
+        <!-- Use JavaScript to add images dynamically -->
+      </div>
+    </div>
+    <div class="right-panel">
+      <div class="camera-screen">
+        <!-- <video id="cameraFeed" controls autoplay></video> -->
+
+        <img src="{{ url_for('start_camera') }}" alt="Camera Feed">
+        <!-- <canvas id="canvas" style="display: none;"></canvas> -->
+        <div class="camera-buttons">
+          <button id="startCamera">Start Camera</button>
+          <button id="takeDefectPic">Take Defect Pic</button>
+          <button id="resumeCamera">Resume Camera</button>
+          <button id="stopCamera">Stop Camera</button>
+        
+        </div>
+      </div>
+    </div>
+  </div>
+  <script src="user.js"></script>
+  <script>
+    document.getElementById('startCamera').addEventListener('click', async () => {
+        const response = await fetch('/start_camera', { method: 'POST' });
+        const data = await response.json();
+        console.log(data); // For debugging, you can remove this later
+    });
+  </script>
+</body>
+</html>
