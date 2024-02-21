@@ -8,6 +8,10 @@ from flask import Response
 
 app = Flask(__name__)
 
+# Global variable to track camera state
+camera_enabled = False
+
+
 def parse_xml(xml_path):
     tree = ET.parse(xml_path)
     root = tree.getroot()
@@ -64,8 +68,10 @@ def detect_stains(frame, stain_coords):
     accuracy = calculate_accuracy(detected_coords, stain_coords)
     if accuracy >= 70:
         timestamp = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-        screenshot_name = os.path.join("F:\FYP check\defects\defects-img\stain_ss", f"defect_screenshot_{timestamp}.png")
-        cv2.imwrite(screenshot_name, frame)
+        print("Hole detected")
+        print("Uncommit this line to save the screenshot")
+        # screenshot_name = os.path.join("F:\FYP check\defects\defects-img\stain_ss", f"defect_screenshot_{timestamp}.png")
+        # cv2.imwrite(screenshot_name, frame)
 
     return frame
 
@@ -92,22 +98,22 @@ def detect_holes(frame, hole_coords):
 
         if 70 <= accuracy <= 100:
             timestamp = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-            screenshot_name = os.path.join("F:\FYP check\defects\defects-img\hole_ss", f"defect_screenshot_{timestamp}.png")
-            cv2.imwrite(screenshot_name, frame)
+            print("Hole detected")
+            print("Uncommit this line to save the screenshot")
+            # screenshot_name = os.path.join("F:\FYP check\defects\defects-img\hole_ss", f"defect_screenshot_{timestamp}.png")
+            # cv2.imwrite(screenshot_name, frame)
 
     return frame
 
-def start_camera_and_process_images():
-    # Stain detection setup
-    xml_directory_stain = r"F:\FYP check\defects\defects-img\stain-detection\stain detection.v1i.voc\train"
+def generate_frames():
+    xml_directory_stain = r"E:\PROJECTS\Automated_Garments_Inspection\required\train"
     all_stain_coords = []
 
     for xml_file in os.listdir(xml_directory_stain):
         if xml_file.endswith(".xml"):
             all_stain_coords.extend(parse_xml(os.path.join(xml_directory_stain, xml_file)))
 
-    # Hole detection setup
-    xml_directory_hole = r"F:\FYP check\defects\defects-img\test"
+    xml_directory_hole = r"E:\PROJECTS\Automated_Garments_Inspection\required\test"
     all_hole_coords = []
 
     for xml_file in os.listdir(xml_directory_hole):
@@ -115,13 +121,16 @@ def start_camera_and_process_images():
             all_hole_coords.extend(parse_xml(os.path.join(xml_directory_hole, xml_file)))
 
     cap = cv2.VideoCapture(0)
-
-    while True:
+    
+    print("Camera started")
+    print("HEEELOZ",camera_enabled)
+    while True:  # Check if camera is enabled
+        print("here")
         ret, frame = cap.read()
         if not ret:
             break
 
-        frame_combined = frame.copy()  # Make a copy of the frame
+        frame_combined = frame.copy() # Make a copy of the frame
 
         frame_combined = detect_stains(frame_combined, all_stain_coords)
         frame_combined = detect_holes(frame_combined, all_hole_coords)
@@ -134,15 +143,34 @@ def start_camera_and_process_images():
                b'Content-Type: image/jpeg\r\n\r\n' + frame_bytes + b'\r\n')
 
     cap.release()
+    cv2.destroyAllWindows()
+    print("Camera stopped")
 
 @app.route('/')
 def index():
     return render_template('index.html')
 
+@app.route('/video_feed')
+def video_feed():
+    return Response(generate_frames(), mimetype='multipart/x-mixed-replace; boundary=frame')
+
 @app.route('/start_camera')
 def start_camera():
-    # start_camera_and_process_images()
-    # return jsonify({'message': 'Camera started'})
-    return Response(start_camera_and_process_images(), mimetype='multipart/x-mixed-replace; boundary=frame')
+    global camera_enabled, cap
+    if not camera_enabled:
+        cap = cv2.VideoCapture(0)  # Reinitialize VideoCapture object
+        camera_enabled = True
+        print("Camera started")
+    return 'Camera started.'
+
+@app.route('/stop_camera')
+def stop_camera():
+    global camera_enabled, cap
+    if camera_enabled:
+        cap.release()  # Release the VideoCapture object
+        camera_enabled = False
+        print("Camera stopped")
+    return 'Camera stopped.'
+
 if __name__ == '__main__':
     app.run(debug=True)

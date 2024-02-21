@@ -146,13 +146,11 @@
     </div>
     <div class="right-panel">
       <div class="camera-screen">
-        <!-- <video id="cameraFeed" controls autoplay></video> -->
-
-        <img src="{{ url_for('start_camera') }}" alt="Camera Feed">
+        <img src="{{ url_for('video_feed') }}" alt="Camera Feed" width="400px" height="300px" margin="2% 2% 2% 2%" />
         <!-- <canvas id="canvas" style="display: none;"></canvas> -->
         <div class="camera-buttons">
-          <button id="startCamera">Start Camera</button>
-          <button id="takeDefectPic">Take Defect Pic</button>
+          <button id="startCamera" onclick="startCamera()">Start Camera</button>
+          <button id="takeDefectPic" onclick="stopCamera()">Take Defect Pic</button>
           <button id="resumeCamera">Resume Camera</button>
           <button id="stopCamera">Stop Camera</button>
         
@@ -163,10 +161,17 @@
   <script src="user.js"></script>
   <script>
     document.getElementById('startCamera').addEventListener('click', async () => {
-        const response = await fetch('/start_camera', { method: 'POST' });
+        const response = await fetch('/start_camera');
         const data = await response.json();
         console.log(data); // For debugging, you can remove this later
     });
+
+    document.getElementById('stopCamera').addEventListener('click', async () => {
+        const response = await fetch('/stop_camera');
+        const data = await response.json();
+        console.log(data); // For debugging, you can remove this later
+    });
+
   </script>
 </body>
 </html>
