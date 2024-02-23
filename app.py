@@ -122,6 +122,7 @@ def generate_frames():
 
     cap = cv2.VideoCapture(0)
     
+    # Check if the webcam is opened correctly
     print("Camera started")
     print("HEEELOZ",camera_enabled)
     while True:  # Check if camera is enabled
