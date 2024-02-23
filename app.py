@@ -8,9 +8,8 @@ from flask import Response
 
 app = Flask(__name__)
 
-# Global variable to track camera state
-camera_enabled = False
-
+global camera_enabled
+camera_enabled = True
 
 def parse_xml(xml_path):
     tree = ET.parse(xml_path)
@@ -120,12 +119,9 @@ def generate_frames():
         if xml_file.endswith(".xml"):
             all_hole_coords.extend(parse_xml(os.path.join(xml_directory_hole, xml_file)))
 
-    cap = cv2.VideoCapture(0)
-    
-    # Check if the webcam is opened correctly
-    print("Camera started")
-    print("HEEELOZ",camera_enabled)
-    while True:  # Check if camera is enabled
+    cap = cv2.VideoCapture(0) 
+    global camera_enabled 
+    while camera_enabled: 
         print("here")
         ret, frame = cap.read()
         if not ret:
@@ -143,35 +139,30 @@ def generate_frames():
         yield (b'--frame\r\n'
                b'Content-Type: image/jpeg\r\n\r\n' + frame_bytes + b'\r\n')
 
+    # If camera is stopped, yield an empty frame
+    yield b'--frame\r\n\r\n'
+    
     cap.release()
     cv2.destroyAllWindows()
-    print("Camera stopped")
+
 
 @app.route('/')
 def index():
     return render_template('index.html')
 
-@app.route('/video_feed')
-def video_feed():
-    return Response(generate_frames(), mimetype='multipart/x-mixed-replace; boundary=frame')
-
 @app.route('/start_camera')
-def start_camera():
-    global camera_enabled, cap
-    if not camera_enabled:
-        cap = cv2.VideoCapture(0)  # Reinitialize VideoCapture object
-        camera_enabled = True
-        print("Camera started")
-    return 'Camera started.'
+def start_camera(): 
+    global camera_enabled 
+    camera_enabled = True
+    return Response(generate_frames(), mimetype='multipart/x-mixed-replace; boundary=frame')
 
 @app.route('/stop_camera')
 def stop_camera():
-    global camera_enabled, cap
-    if camera_enabled:
-        cap.release()  # Release the VideoCapture object
-        camera_enabled = False
-        print("Camera stopped")
-    return 'Camera stopped.'
+    global camera_enabled 
+    camera_enabled = False
+    print("Inside End")
+    return Response(generate_frames(), mimetype='multipart/x-mixed-replace; boundary=frame')
+
 
 if __name__ == '__main__':
     app.run(debug=True)

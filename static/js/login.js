@@ -14,7 +14,7 @@ function handleLogin(event) {
     // Check if the provided username and password match any user
     const user = users.find(user => user.username === username && user.password === password);
     if (user) {
-      window.location.href = "ADMIN.html";
+      window.location.href = "admin.html";
       // Redirect to the home page or any other page after successful login
       // window.location.href = 'home.html';
     } else {
