@@ -43,31 +43,39 @@
   <script src="../static/js/user.js"></script>
   
   <script>
-    document.getElementById('startCamera').addEventListener('click', async () => {
+    async function startCamera() {
         try {
             const response = await fetch('/start_camera');
             if (response.ok) {
                 console.log('Camera started');
+                document.getElementById('cameraFeed').src = "{{ url_for('start_camera') }}?" + new Date().getTime();
+                // Add a timestamp to the URL to prevent caching
             } else {
                 console.error('Failed to start camera');
             }
         } catch (error) {
             console.error('Error starting camera:', error);
         }
-    });
+    }
 
-    document.getElementById('stopCamera').addEventListener('click', async () => {
+    async function stopCamera() {
         try {
             const response = await fetch('/stop_camera');
             if (response.ok) {
                 console.log('Camera stopped');
+                // Clear the image source to stop displaying the feed
+                document.getElementById('cameraFeed').src = "";
             } else {
                 console.error('Failed to stop camera');
             }
         } catch (error) {
             console.error('Error stopping camera:', error);
         }
-    });
-  </script>
+    }
+
+    // Event listeners for buttons
+    document.getElementById('startCamera').addEventListener('click', startCamera);
+    document.getElementById('stopCamera').addEventListener('click', stopCamera);
+</script>
 </body>
 </html>

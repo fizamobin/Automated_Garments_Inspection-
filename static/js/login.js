@@ -14,7 +14,7 @@ function handleLogin(event) {
     // Check if the provided username and password match any user
     const user = users.find(user => user.username === username && user.password === password);
     if (user) {
-      window.location.href = "admin.html";
+      window.location.href = "F:\FYP check\defects\FYP\Automated_Garments_Inspection-\defects-img\static\FYP\Automated_Garments_Inspection-\templates\ADMIN.html";
       // Redirect to the home page or any other page after successful login
       // window.location.href = 'home.html';
     } else {

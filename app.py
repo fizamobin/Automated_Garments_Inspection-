@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, render_template, request, jsonify, redirect, url_for
 import cv2
 import numpy as np
 import os
@@ -78,9 +78,15 @@ def detect_holes(frame, hole_coords):
     gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
     blurred = cv2.GaussianBlur(gray, (7, 7), 0)
     edges = cv2.Canny(blurred, 70, 200)
+    
+    # Apply morphological operations (opening and closing)
+    kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (5, 5))
+    edges = cv2.morphologyEx(edges, cv2.MORPH_CLOSE, kernel)
+    edges = cv2.morphologyEx(edges, cv2.MORPH_OPEN, kernel)
+    
     contours, _ = cv2.findContours(edges.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
-    min_area = 500
+    min_area = 300
     defects = []
 
     for contour in contours:
@@ -104,15 +110,17 @@ def detect_holes(frame, hole_coords):
 
     return frame
 
+
+
 def generate_frames():
-    xml_directory_stain = r"E:\PROJECTS\Automated_Garments_Inspection\required\train"
+    xml_directory_stain = r"F:\FYP check\defects\FYP\Automated_Garments_Inspection-\defects-img\Stain"
     all_stain_coords = []
 
     for xml_file in os.listdir(xml_directory_stain):
         if xml_file.endswith(".xml"):
             all_stain_coords.extend(parse_xml(os.path.join(xml_directory_stain, xml_file)))
 
-    xml_directory_hole = r"E:\PROJECTS\Automated_Garments_Inspection\required\test"
+    xml_directory_hole = r"F:\FYP check\defects\FYP\Automated_Garments_Inspection-\defects-img\Hole"
     all_hole_coords = []
 
     for xml_file in os.listdir(xml_directory_hole):
@@ -144,6 +152,44 @@ def generate_frames():
     
     cap.release()
     cv2.destroyAllWindows()
+
+
+# Dummy user data for demonstration (replace with actual user authentication)
+# users = {
+#     "admin": {"password": "admin123", "role": "admin"},
+#     "user": {"password": "user123", "role": "user"}
+# }
+
+# @app.route('/')
+# # def login():
+# #     return render_template('login.html')
+
+# # @app.route('/signup')
+# # def signup():
+# #     return render_template('signup.html')
+
+# @app.route('/authenticate', methods=['POST'])
+# def authenticate():
+#     username = request.form.get('username')
+#     password = request.form.get('password')
+
+#     if username in users and users[username]['password'] == password:
+#         role = users[username]['role']
+#         if role == 'admin':
+#             return redirect(url_for('ADMIN.html'))
+#         elif role == 'user':
+#             return redirect(url_for('index.html'))
+#     else:
+#         # Redirect back to login page if authentication fails
+#         return redirect(url_for('login'))
+
+# @app.route('/admin')
+# def admin():
+#     return render_template('ADMIN.html')
+
+# @app.route('/user')
+# def user():
+#     return render_template('index.html')
 
 
 @app.route('/')
