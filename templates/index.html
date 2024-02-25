@@ -10,7 +10,7 @@
   <header>
     <div class="logo">
       <img src="../static/img/logo.png" alt="Logo">
-      <button>Logout</button>
+      <button><a href="../templates/login.html">Logout</a></button>
     </div> 
   </header>
   <div class="main-container">
@@ -48,6 +48,7 @@
             const response = await fetch('/start_camera');
             if (response.ok) {
                 console.log('Camera started');
+                window.location.reload(); // Refresh the page
                 document.getElementById('cameraFeed').src = "{{ url_for('start_camera') }}?" + new Date().getTime();
                 // Add a timestamp to the URL to prevent caching
             } else {

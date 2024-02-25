@@ -155,42 +155,41 @@ def generate_frames():
 
 
 # Dummy user data for demonstration (replace with actual user authentication)
-# users = {
-#     "admin": {"password": "admin123", "role": "admin"},
-#     "user": {"password": "user123", "role": "user"}
-# }
+users = {
+    "admin": {"password": "admin123", "role": "admin"},
+    "user": {"password": "user123", "role": "user"}
+}
 
-# @app.route('/')
-# # def login():
-# #     return render_template('login.html')
+@app.route('/')
+def login():
+    return render_template('login.html')
 
-# # @app.route('/signup')
-# # def signup():
-# #     return render_template('signup.html')
+@app.route('/signup')
+def signup():
+    return render_template('signup.html')
 
-# @app.route('/authenticate', methods=['POST'])
-# def authenticate():
-#     username = request.form.get('username')
-#     password = request.form.get('password')
+@app.route('/authenticate', methods=['POST'])
+def authenticate():
+    username = request.form.get('username')
+    password = request.form.get('password')
 
-#     if username in users and users[username]['password'] == password:
-#         role = users[username]['role']
-#         if role == 'admin':
-#             return redirect(url_for('ADMIN.html'))
-#         elif role == 'user':
-#             return redirect(url_for('index.html'))
-#     else:
-#         # Redirect back to login page if authentication fails
-#         return redirect(url_for('login'))
+    if username in users and users[username]['password'] == password:
+        role = users[username]['role']
+        if role == 'admin':
+            return redirect(url_for('admin'))  # Redirect to admin route
+        elif role == 'user':
+            return redirect(url_for('user'))  # Redirect to user route
+    else:
+        # Redirect back to login page if authentication fails
+        return redirect(url_for('login'))
 
-# @app.route('/admin')
-# def admin():
-#     return render_template('ADMIN.html')
+@app.route('/admin')
+def admin():
+    return render_template('ADMIN.html')
 
-# @app.route('/user')
-# def user():
-#     return render_template('index.html')
-
+@app.route('/user')
+def user():
+    return render_template('index.html')
 
 @app.route('/')
 def index():
