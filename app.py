@@ -185,7 +185,9 @@ def authenticate():
 
 @app.route('/admin')
 def admin():
-    return render_template('ADMIN.html')
+    with open("count.txt", 'r+') as f:  
+        readed_count = int(f.readline().strip())  
+    return render_template('ADMIN.html',view_artical_count=readed_count)
 
 @app.route('/user')
 def user():
@@ -197,6 +199,11 @@ def index():
 
 @app.route('/start_camera')
 def start_camera(): 
+    with open("count.txt", 'r+') as f:  
+        readed_count = int(f.readline().strip())  
+        f.seek(0) 
+        f.write(str(readed_count + 1)) 
+
     global camera_enabled 
     camera_enabled = True
     return Response(generate_frames(), mimetype='multipart/x-mixed-replace; boundary=frame')
