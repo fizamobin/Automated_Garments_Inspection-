@@ -9,7 +9,7 @@ from flask import Response
 
 app = Flask(__name__)
 
-
+#Change for the branch
 global camera_enabled
 camera_enabled = True
 
