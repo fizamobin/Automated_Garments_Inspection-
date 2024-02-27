@@ -113,3 +113,12 @@ body {
     margin-bottom: 1rem;
   }
   
+
+  .image-container {
+    display: flex; /* This will make the images display horizontally */
+  }
+  
+  .image-container img {
+    max-width: 100px; /* Adjust this value according to your needs */
+    margin-right: 10px; /* Adds some spacing between images */
+  }

@@ -2,14 +2,19 @@ from flask import Flask, render_template, request, jsonify, redirect, url_for
 import cv2
 import numpy as np
 import os
+import random
 import datetime
 import xml.etree.ElementTree as ET
 from flask import Response
 
 app = Flask(__name__)
 
+
 global camera_enabled
 camera_enabled = True
+
+screenshot_hole_folder = "F:\FYP check\defects\defects-img\hole_ss"
+screenshot_stain_folder = "F:\FYP check\defects\defects-img\stain_ss"
 
 def parse_xml(xml_path):
     tree = ET.parse(xml_path)
@@ -45,34 +50,117 @@ def calculate_accuracy(detected_coords, ground_truth_coords):
     return accuracy_percentage
 
 
+
 def detect_stains(frame, stain_coords):
-    gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-    _, binary = cv2.threshold(gray, 100, 255, cv2.THRESH_BINARY)
-    contours, _ = cv2.findContours(binary, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    # Convert the frame to the HSV color space
+    hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
+    
+    # Define the lower and upper bounds for blue color in HSV
+    lower_blue = np.array([0, 50, 50])
+    upper_blue = np.array([30, 255, 255])
 
-    detected_coords = []
+    # Create a mask for blue color
+    mask_blue = cv2.inRange(hsv, lower_blue, upper_blue)
 
+    # Apply morphological operations to enhance stain detection
+    kernel = np.ones((5, 5), np.uint8)
+    mask = cv2.morphologyEx(mask_blue, cv2.MORPH_CLOSE, kernel)
+    mask = cv2.morphologyEx(mask, cv2.MORPH_OPEN, kernel)
+
+    # Find contours in the mask
+    contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+
+    # Iterate through contours
     for contour in contours:
-        x, y, w, h = cv2.boundingRect(contour)
-        for coord in stain_coords:
-            xmin, ymin, xmax, ymax = coord
-            if x >= xmin and y >= ymin and x + w <= xmax and y + h <= ymax:
-                cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
-                accuracy = calculate_accuracy([(x, y, x + w, y + h)], [coord])
-                accuracy_text = f"Stain, {accuracy:.2f}%"
-                cv2.putText(frame, accuracy_text, (x, y - 25), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
-                detected_coords.append((x, y, x + w, y + h))
-                break
+        # Calculate area of contour
+        area = cv2.contourArea(contour)
+        
+        # Filter out small contours which are unlikely to be stains
+        if area < 100:
+            continue
 
-    accuracy = calculate_accuracy(detected_coords, stain_coords)
-    if accuracy >= 70:
-        timestamp = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-        print("Hole detected")
-        print("Uncommit this line to save the screenshot")
-        # screenshot_name = os.path.join("F:\FYP check\defects\defects-img\stain_ss", f"defect_screenshot_{timestamp}.png")
-        # cv2.imwrite(screenshot_name, frame)
+        # Draw bounding box around the contour
+        x, y, w, h = cv2.boundingRect(contour)
+        cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
+
+        # Calculate accuracy if needed
+        accuracy = calculate_accuracy([(x, y, x + w, y + h)], stain_coords)
+        accuracy_text = f"Stain, {accuracy:.2f}%"
+        cv2.putText(frame, accuracy_text, (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
+
+        # Save image if accuracy is within desired range
+        if accuracy >= 70:
+            timestamp = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+            screenshot_name = os.path.join(screenshot_stain_folder, f"defect_screenshot_{timestamp}.png")
+            cv2.imwrite(screenshot_name, frame)
 
     return frame
+
+# def detect_stains(frame, stain_coords):
+#     gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+#     _, binary = cv2.threshold(gray, 100, 255, cv2.THRESH_BINARY)
+#     contours, _ = cv2.findContours(binary, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+
+#     detected_coords = []
+
+#     for contour in contours:
+#         x, y, w, h = cv2.boundingRect(contour)
+#         for coord in stain_coords:
+#             xmin, ymin, xmax, ymax = coord
+#             if x >= xmin and y >= ymin and x + w <= xmax and y + h <= ymax:
+#                 cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
+#                 accuracy = calculate_accuracy([(x, y, x + w, y + h)], [coord])
+#                 accuracy_text = f"Stain, {accuracy:.2f}%"
+#                 cv2.putText(frame, accuracy_text, (x, y - 25), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0),2)
+#                 detected_coords.append((x, y, x + w, y + h))
+#                 break
+
+
+    # accuracy = calculate_accuracy(detected_coords, stain_coords)
+    # if accuracy >= 70:
+    #     timestamp = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+    #     print("Hole detected")
+    #     print("Uncommit this line to save the screenshot")
+    #     # screenshot_name = os.path.join(screenshot_stain_folder, f"defect_screenshot_{timestamp}.png")
+    #     # cv2.imwrite(screenshot_name, frame)
+
+    # return frame
+
+# def detect_stains(frame):
+#     # Convert the frame to grayscale
+#     gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+    
+#     # Apply Gaussian blur to reduce noise
+#     blurred = cv2.GaussianBlur(gray, (5, 5), 0)
+    
+#     # Use adaptive thresholding to create a binary image
+#     binary = cv2.adaptiveThreshold(blurred, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY_INV, 11, 2)
+    
+#     # Find contours in the binary image
+#     contours, _ = cv2.findContours(binary, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    
+#     # Initialize a list to store detected stain coordinates
+#     detected_coords = []
+
+#     # Iterate through the contours
+#     for contour in contours:
+#         # Calculate the area of each contour
+#         area = cv2.contourArea(contour)
+        
+#         # Filter out small contours (noise)
+#         if area > 100:
+#             # Get the bounding box of the contour
+#             x, y, w, h = cv2.boundingRect(contour)
+            
+#             # Draw a rectangle around the detected stain
+#             cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
+            
+#             # Store the coordinates of the detected stain
+#             detected_coords.append((x, y, x + w, y + h))
+
+#     return frame
+
+
 
 def detect_holes(frame, hole_coords):
     gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
@@ -105,22 +193,22 @@ def detect_holes(frame, hole_coords):
             timestamp = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
             print("Hole detected")
             print("Uncommit this line to save the screenshot")
-            # screenshot_name = os.path.join("F:\FYP check\defects\defects-img\hole_ss", f"defect_screenshot_{timestamp}.png")
-            # cv2.imwrite(screenshot_name, frame)
+            screenshot_name = os.path.join(screenshot_folder, f"defect_screenshot_{timestamp}.png")
+            cv2.imwrite(screenshot_name, frame)
 
     return frame
 
 
 
 def generate_frames():
-    xml_directory_stain = r"F:\FYP check\defects\FYP\Automated_Garments_Inspection-\defects-img\Stain"
+    xml_directory_stain = r"F:\FYP check\defects\FYP\Automated_Garments_Inspection-\defects-img\stain_dataset"
     all_stain_coords = []
 
     for xml_file in os.listdir(xml_directory_stain):
         if xml_file.endswith(".xml"):
             all_stain_coords.extend(parse_xml(os.path.join(xml_directory_stain, xml_file)))
 
-    xml_directory_hole = r"F:\FYP check\defects\FYP\Automated_Garments_Inspection-\defects-img\Hole"
+    xml_directory_hole = r"F:\FYP check\defects\FYP\Automated_Garments_Inspection-\defects-img\hole-dataset"
     all_hole_coords = []
 
     for xml_file in os.listdir(xml_directory_hole):
@@ -191,11 +279,26 @@ def admin():
 
 @app.route('/user')
 def user():
-    return render_template('index.html')
+    
+    lst_hole = os.listdir(screenshot_hole_folder)
+    lst_stain = os.listdir(screenshot_stain_folder)
 
-@app.route('/')
-def index():
-    return render_template('index.html')
+    random_hole_images = random.sample(lst_hole, min(len(lst_hole), 3)) if lst_hole else []
+    random_hole_images_with_path = [os.path.join(screenshot_hole_folder, image) for image in random_hole_images]
+
+    random_stain_images = random.sample(lst_stain, min(len(lst_stain), 3)) if lst_stain else []
+    random_stain_images_with_path = [os.path.join(screenshot_stain_folder, image) for image in random_stain_images]
+
+    print(random_hole_images_with_path)
+    print(random_stain_images_with_path)
+    return render_template('index.html'
+                           ,holes = random_hole_images_with_path
+                           ,stains = random_stain_images_with_path
+                           )
+
+# @app.route('/')
+# def index():
+#     return render_template('index.html')
 
 @app.route('/start_camera')
 def start_camera(): 

@@ -1,24 +1,42 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Automated Garments Inspection</title>
   <link rel="stylesheet" href="../static/css/user.css">
 </head>
+
 <body>
   <header>
     <div class="logo">
       <img src="../static/img/logo.png" alt="Logo">
-      <button><a href="../templates/login.html">Logout</a></button>
-    </div> 
+      <a href="../templates/login.html"><button id="logout">Logout</button></a>
+    </div>
   </header>
   <div class="main-container">
     <div class="left-panel">
       <div class="report">
         <h2>Defect Report</h2>
-        <p>Defect Name: Hole,Stain</p>
-        <p>Number of Defects: 02</p>
+        <div>
+          <p>HOLE</p>
+          <div class="image-container">
+            {% for hole in holes %}
+            <img  src="{{ hole|replace('\\', '/') }}" />
+            {% endfor %}
+          </div>
+        </div>
+
+        <div>
+          <p>STAIN</p>
+          <div class="image-container">
+            {% for stain in stains %}
+            <img src="{{ stain }}" />
+            {% endfor %}
+          </div>
+        </div>
+
         <button id="printReport">Print Report</button>
       </div>
       <div class="defect-images">
@@ -28,55 +46,57 @@
     </div>
     <div class="right-panel">
       <div class="camera-screen">
+
         <img src="{{ url_for('start_camera') }}" alt="Camera Feed" width="400px" height="300px" margin="2% 2% 2% 2%" />
         <!-- <canvas id="canvas" style="display: none;"></canvas> -->
         <div class="camera-buttons">
           <button id="startCamera">Start Camera</button>
-          <button id="takeDefectPic">Take Defect Pic</button>
-          <button id="resumeCamera">Resume Camera</button>
+          <!-- <button id="takeDefectPic">Take Defect Pic</button>
+          <button id="resumeCamera">Resume Camera</button> -->
           <button id="stopCamera">Stop Camera</button>
-        
+
         </div>
       </div>
     </div>
   </div>
   <script src="../static/js/user.js"></script>
-  
+
   <script>
     async function startCamera() {
-        try {
-            const response = await fetch('/start_camera');
-            if (response.ok) {
-                console.log('Camera started');
-                window.location.reload(); // Refresh the page
-                document.getElementById('cameraFeed').src = "{{ url_for('start_camera') }}?" + new Date().getTime();
-                // Add a timestamp to the URL to prevent caching
-            } else {
-                console.error('Failed to start camera');
-            }
-        } catch (error) {
-            console.error('Error starting camera:', error);
+      try {
+        const response = await fetch('/start_camera');
+        if (response.ok) {
+          console.log('Camera started');
+          window.location.reload(); // Refresh the page
+          document.getElementById('cameraFeed').src = "{{ url_for('start_camera') }}?" + new Date().getTime();
+          // Add a timestamp to the URL to prevent caching
+        } else {
+          console.error('Failed to start camera');
         }
+      } catch (error) {
+        console.error('Error starting camera:', error);
+      }
     }
 
     async function stopCamera() {
-        try {
-            const response = await fetch('/stop_camera');
-            if (response.ok) {
-                console.log('Camera stopped');
-                // Clear the image source to stop displaying the feed
-                document.getElementById('cameraFeed').src = "";
-            } else {
-                console.error('Failed to stop camera');
-            }
-        } catch (error) {
-            console.error('Error stopping camera:', error);
+      try {
+        const response = await fetch('/stop_camera');
+        if (response.ok) {
+          console.log('Camera stopped');
+          // Clear the image source to stop displaying the feed
+          document.getElementById('cameraFeed').src = "";
+        } else {
+          console.error('Failed to stop camera');
         }
+      } catch (error) {
+        console.error('Error stopping camera:', error);
+      }
     }
 
     // Event listeners for buttons
     document.getElementById('startCamera').addEventListener('click', startCamera);
     document.getElementById('stopCamera').addEventListener('click', stopCamera);
-</script>
+  </script>
 </body>
+
 </html>
