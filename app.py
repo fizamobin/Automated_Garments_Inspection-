@@ -10,6 +10,7 @@ from flask import Response
 app = Flask(__name__)
 
 
+# Define the path to the folder where screenshots will be saved
 global camera_enabled
 camera_enabled = True
 
